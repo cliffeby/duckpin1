@@ -1,0 +1,2 @@
+msg = "HW"
+print (msg)
