@@ -13,8 +13,7 @@ img = cv2.imread('P:/images/image1129173.jpg')
 hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 #
 # plt.imshow(img, cmap = 'gray', interpolation = 'bicubic')
-# plt.show() 
-
+# plt.show()
 
 # Good pin outline
 # lower_red = np.array([0,0,0])
