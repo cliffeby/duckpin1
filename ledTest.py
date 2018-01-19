@@ -7,7 +7,7 @@ from random import randint
 # leds2 = [15,14,3,2,21,20,16,5,26,6]
 # leds3 = [16,5,2,26,21,14,6,20,3,15]
 leds1 = [ 6,26,20, 5,21,3,16,2,14,15]
-leds2 = [15,3,14,22,21,2,6,26,5,16]
+leds2 = [15,3,14,20,21,2,6,26,5,16]
 leds3 = [16,2,5,14,21,26,15,3,20,6]
 
 
@@ -45,15 +45,17 @@ def bit_GPIO(pins, bits):
       
 
 setupGPIO(leds2)
-
 lightsOFF(leds2)
 lightTESTa(leds2,1,0)
 lightTESTa(leds2[::-1], 0.5,0)
+
+setupGPIO(leds3)
 lightsOFF(leds3)
 lightTESTa(leds3,1,0)
 lightTESTa(leds3[::-1], 0.5,0)
 
 
+setupGPIO(leds1)
 lightsOFF(leds1)
 for counter in range(1,1024):
     x = randint(0,1023)
@@ -62,4 +64,4 @@ for counter in range(1,1024):
     print("{0:b}".format(x), x, len("{0:b}".format(x)))
 
     bit_GPIO(leds3,ss) 
-    time.sleep(10)     
+    time.sleep(30)     
