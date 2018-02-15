@@ -32,3 +32,9 @@ print ('D', D)
 print (D[0][0][0], D[0][0][1], D[1][0][0], D[1][0][1])
 for pt in zip(*D[::1]):      
     print (pt)
+
+resX = 1440
+resY = 900
+resFactor = 2
+res = (int(resX/resFactor), int(resY/resFactor))
+print('Res', res)

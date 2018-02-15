@@ -44,24 +44,28 @@ def bit_GPIO(pins, bits):
             GPIO.output(pins[idx], GPIO.LOW)
       
 
-setupGPIO(leds2)
-lightsOFF(leds2)
-lightTESTa(leds2,1,0)
-lightTESTa(leds2[::-1], 0.5,0)
-
-setupGPIO(leds3)
-lightsOFF(leds3)
-lightTESTa(leds3,1,0)
-lightTESTa(leds3[::-1], 0.5,0)
-
+# *-
 
 setupGPIO(leds1)
 lightsOFF(leds1)
-for counter in range(1,1024):
-    x = randint(0,1023)
-    # x = 1024 - counter
-    ss = "{0:b}".format(x)
-    print("{0:b}".format(x), x, len("{0:b}".format(x)))
+lightTESTa(leds1,1,0)
+lightTESTa(leds1[::-1], 0.5,0)
+bit_GPIO(leds1,'0000001000')
+# setupGPIO(leds1)
+# bit_GPIO(leds1,"{0:b}".format(1023))
+# time.sleep(20)
+# bit_GPIO(leds1,"{0:b}".format(0))
+# time.sleep(10)
+# bit_GPIO(leds1,"{0:b}".format(1023))         
+# time.sleep(10)
 
-    bit_GPIO(leds3,ss) 
-    time.sleep(30)     
+# setupGPIO(leds1)
+# lightsOFF(leds1)
+# for counter in range(1,1024):
+#     x = randint(0,1023)
+#     # x = 1024 - counter
+#     ss = "{0:b}".format(x)
+#     print("{0:b}".format(x), x, len("{0:b}".format(x)))
+
+#     bit_GPIO(leds3,ss) 
+#     time.sleep(30)     
