@@ -9,10 +9,10 @@ from picamera import PiCamera, Color
 from picamera.array import PiRGBArray
 # from matplotlib import pyplot as plt
 
-pinsGPIO = [6, 26, 20, 5, 21, 3, 16, 2, 14, 15]
+pinsGPIO = [15,14,3,2,21,20,16,5,26,6]
 # mask_crop_ranges = ([1100,1700, 220,2800],[0,0,0,0])
-pin_crop_ranges = ([390,490, 820,930],[325,425, 735,835],[345,445, 960,1060],[265,365, 680,760],[280,380, 860,960],
-    [300,400, 1065,1165],[260,360, 600,680],[265,365, 790,890],[275,370, 970,1070],[280,380, 1150,1250])
+pin_crop_ranges = ([445,515, 756,825],[345,445, 705,765],[365,460, 870,950],[320,385, 660,710],[320,385, 820,890],
+    [330,390, 980,1045],[280,360, 600,680],[270,360, 745,805],[275,360, 890,970],[280,360, 1055,1135])
 
 def setResolution():
     resX = 1440
@@ -39,8 +39,8 @@ def bit_GPIO(pins,pinCount):
 def writeImageSeries(frameNoStart, numberOfFrames, img_rgb):
     if frameNoStart <= frameNo:
         if frameNo <= frameNoStart+numberOfFrames:
-            print ('Saving ../videos/video3dFrame'+ str(frameNo) +'.jpg')
-            cv2.imwrite('../videos/video3dFrame'+ str(frameNo) +'.jpg',img_rgb)
+            print ('Saving ../home/pi/Shared/videos/videoCCEFrame'+ str(frameNo) +'.jpg')
+            cv2.imwrite('/home/pi/Shared/videos/videoCCEFrame'+ str(frameNo) +'.jpg',img_rgb)
 
 def isPinSetter():
     global setterPresent
@@ -65,7 +65,7 @@ def isPinSetter():
     for cnt in contours:
         #Contour area is measured
         area = cv2.contourArea(cnt) +area
-    if area >10000:
+    if area >1000:
         setterPresent = True
         firstSetterFrame = frameNo
     if setterPresent:
@@ -77,7 +77,7 @@ def isPinSetter():
 def arm():
     global firstArmFrame
     global frameNo
-    firstArmFrame = frameNo
+    firstArmTime = frameNo
 
 def findPins():
         global x,x1,y,y1
@@ -92,12 +92,14 @@ def findPins():
 
         mask = cv2.inRange(img_rgb,lower_red,upper_red)
         output = cv2.bitwise_and(img_rgb, img_rgb, mask=mask)
-        threshold = 5
+        threshold = 3
         for i in range(0,10):
                 crop.append(output[pin_crop_ranges[i][0]+y:pin_crop_ranges[i][1]+y1,pin_crop_ranges[i][2]+x:pin_crop_ranges[i][3]+x1])
                 hist = cv2.calcHist([crop[i]],[1],None,[4], [10,50])
                 sumHist[i] = hist[0]+hist[1]+hist[2]+hist[3]
- 
+                
+                    
+                print (i, sumHist[i])
                 if threshold < sumHist[i]:
                     pinCount = pinCount + 2**(9-i)
                 
@@ -152,12 +154,12 @@ armPresent = False
 maskFrame = True
 priorPinCount = 0
 activity = "\r\n"
-x=20
+x=-45
 x1=0 +x
-y=-0
+y=-120
 y1=0 + y
-# crop_ranges = ([1200,1800, 220,2800],[0,0,0,0])
-crop_ranges = ([600,900, 110,1400],[0,0,0,0])
+crop_ranges = ([500,900,100,1220],[0,0,0,0])
+# crop_ranges = ([600,900, 110,1400],[0,0,0,0])
 ballCoords=[0]*100
 frameNo = 0
 prevFrame = 0
@@ -188,32 +190,33 @@ for frame in camera.capture_continuous(rawCapture,format="bgr",  use_video_port=
     if maskFrame:
         frame1 = frame.array
         # mask= frame1[650:900, 250:1500]
-        mask= frame1[325:450, 125:750]
+        mask= frame1[500:900, 100:1220]
         frame1 = mask
         maskFrame = False
         continue
     frameNo = frameNo +1
     img_rgb = frame2
+    # cv2.imwrite('../videos/videoCCEFrame'+ str(frameNo) +'.jpg',img_rgb)
     if pinReactionFlag:
-        if time.process_time()-2 > pinReactionTime:
+        if time.process_time()-3 > pinReactionTime:
             
             activity = activity + str(priorPinCount)+','
             print(activity)
             pinReactionFlag = False
 
     if setterPresent:
-            if firstSetterFrame + 140 > frameNo:
+            if firstSetterFrame + 20 > frameNo:
                 continue
     if armPresent:
-            if firstArmFrame + 140 > frameNo:
+            if firstArmFrame + 20 > frameNo:
                 continue
-            if firstArmFrame+140 == frameNo:
+            if firstArmFrame+ 20 == frameNo:
                 armPresent = False
                 activity = activity + str(priorPinCount)+ ',-1,'
     
     isPinSetter()
     # frame2= frame2[650:900, 250:1500]
-    frame2= frame2[325:450, 125:750]
+    frame2= frame2[500:900, 100:1220]
     img_gray1 = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
     img_gray2 = cv2.cvtColor(frame2, cv2.COLOR_BGR2GRAY)
     diff = cv2.absdiff(img_gray1,img_gray2)
@@ -221,7 +224,7 @@ for frame in camera.capture_continuous(rawCapture,format="bgr",  use_video_port=
     ret, thresh = cv2.threshold(diff, 120,255,cv2.THRESH_BINARY)
     frame = thresh
     # Blur eliminates noise by averaging surrounding pixels.  Value is array size of blur and MUST BE ODD
-    thresh = cv2.medianBlur(thresh,15)
+    thresh = cv2.medianBlur(thresh,13)
     cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
         cv2.CHAIN_APPROX_SIMPLE)[-2]
     center = None
@@ -240,7 +243,8 @@ for frame in camera.capture_continuous(rawCapture,format="bgr",  use_video_port=
             M = cv2.moments(c)
             center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
             cv2.drawContours(img_gray2, cnts, -1, (0,255,0), 3)
-            if center < (1100,200):
+            print (center)
+            if center < (900,200):
                     ballCoords[ballCounter] = center
                     # activity = activity + str(priorPinCount) + ','+ str(center)+ ','
                     
@@ -256,17 +260,18 @@ for frame in camera.capture_continuous(rawCapture,format="bgr",  use_video_port=
                         pinReactionFlag = True
                         print('CENTER',center, radius, ballCoords[ballCounter], frameNo, len(cnts),ballCounter)
                         print('Activity', activity)
-                        if len(activity) > 100:
+                        if len(activity) > 500:
                             activity = activity + "\r\n"
                             print('Send')
                             iotSend(activity)
-                            # activity = "\r\n"
+                            activity = "\r\n"
             else:
                 firstArmFrame = frameNo
                 armPresent = True
     cv2.imshow('Ball', img_gray2)
     # cv2.imshow('Thresh' , thresh)
     camera.annotate_text = "Duckpins = "+ str(time.process_time()) + " " + str(frameNo) + " " + str(priorPinCount)
+    writeImageSeries(20, 3, img_rgb)
     cv2.imshow('Frame' , img_rgb)
     tf = findPins()        
 
