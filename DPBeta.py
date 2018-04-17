@@ -146,7 +146,7 @@ def iotSend(msg):
             client.send_event_async(message, iot.send_confirmation_callback, message_counter)
             print ( "IoTHubClient.send_event_async accepted message [%d] for transmission to IoT Hub." % message_counter )
 
-            # Wait for Commands or exit
+            # Wait for Commands or exit.
             print ( "IoTHubClient waiting for commands, press Ctrl-C to exit" )
 
 
