@@ -11,8 +11,8 @@ from picamera.array import PiRGBArray
 
 pinsGPIO = [15,14,3,2,21,20,16,5,26,6]
 # mask_crop_ranges = ([1100,1700, 220,2800],[0,0,0,0])
-pin_crop_ranges = ([445,515, 756,825],[345,445, 705,765],[365,460, 870,950],[320,385, 660,710],[320,385, 820,890],
-    [330,390, 980,1045],[280,360, 600,680],[270,360, 745,805],[275,360, 890,970],[280,360, 1055,1135])
+pin_crop_ranges = ([445,515, 755,825],[360,440, 715,760],[370,450, 885,940],[320,385, 660,710],[320,385, 820,885],
+    [330,380, 980,1055],[275,345, 605,665],[275,345, 745,805],[275,345, 895,955],[275,345, 1060,1120])
 
 def setResolution():
     resX = 1440
@@ -77,7 +77,7 @@ def isPinSetter():
 def arm():
     global firstArmFrame
     global frameNo
-    firstArmTime = frameNo
+    firstArmFrame = frameNo
 
 def findPins():
         global x,x1,y,y1
@@ -92,15 +92,25 @@ def findPins():
 
         mask = cv2.inRange(img_rgb,lower_red,upper_red)
         output = cv2.bitwise_and(img_rgb, img_rgb, mask=mask)
-        threshold = 3
-        for i in range(0,10):
+        threshold1 = 50
+        threshold2 = 0
+        for i in range(0,6):
                 crop.append(output[pin_crop_ranges[i][0]+y:pin_crop_ranges[i][1]+y1,pin_crop_ranges[i][2]+x:pin_crop_ranges[i][3]+x1])
                 hist = cv2.calcHist([crop[i]],[1],None,[4], [10,50])
                 sumHist[i] = hist[0]+hist[1]+hist[2]+hist[3]
                 
                     
                 print (i, sumHist[i])
-                if threshold < sumHist[i]:
+                if threshold1 < sumHist[i]:
+                    pinCount = pinCount + 2**(9-i)
+        for i in range(6,10):
+                crop.append(output[pin_crop_ranges[i][0]+y:pin_crop_ranges[i][1]+y1,pin_crop_ranges[i][2]+x:pin_crop_ranges[i][3]+x1])
+                hist = cv2.calcHist([crop[i]],[1],None,[4], [10,50])
+                sumHist[i] = hist[0]+hist[1]+hist[2]+hist[3]
+                
+                    
+                print (i, sumHist[i])
+                if threshold2 < sumHist[i]:
                     pinCount = pinCount + 2**(9-i)
                 
         print('HIST', frameNo, pinCount)
@@ -154,11 +164,11 @@ armPresent = False
 maskFrame = True
 priorPinCount = 0
 activity = "\r\n"
-x=-45
+x=-15
 x1=0 +x
 y=-120
 y1=0 + y
-crop_ranges = ([500,900,100,1220],[0,0,0,0])
+crop_ranges = ([500,900,100,1240],[0,0,0,0])
 # crop_ranges = ([600,900, 110,1400],[0,0,0,0])
 ballCoords=[0]*100
 frameNo = 0
@@ -190,7 +200,7 @@ for frame in camera.capture_continuous(rawCapture,format="bgr",  use_video_port=
     if maskFrame:
         frame1 = frame.array
         # mask= frame1[650:900, 250:1500]
-        mask= frame1[500:900, 100:1220]
+        mask= frame1[500:900, 100:1240]
         frame1 = mask
         maskFrame = False
         continue
@@ -205,18 +215,18 @@ for frame in camera.capture_continuous(rawCapture,format="bgr",  use_video_port=
             pinReactionFlag = False
 
     if setterPresent:
-            if firstSetterFrame + 20 > frameNo:
+            if firstSetterFrame + 60 > frameNo:
                 continue
     if armPresent:
-            if firstArmFrame + 20 > frameNo:
+            if firstArmFrame + 70 > frameNo:
                 continue
-            if firstArmFrame+ 20 == frameNo:
+            if firstArmFrame+ 70 == frameNo:
                 armPresent = False
                 activity = activity + str(priorPinCount)+ ',-1,'
     
     isPinSetter()
     # frame2= frame2[650:900, 250:1500]
-    frame2= frame2[500:900, 100:1220]
+    frame2= frame2[500:900, 100:1240]
     img_gray1 = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
     img_gray2 = cv2.cvtColor(frame2, cv2.COLOR_BGR2GRAY)
     diff = cv2.absdiff(img_gray1,img_gray2)
@@ -272,10 +282,11 @@ for frame in camera.capture_continuous(rawCapture,format="bgr",  use_video_port=
     # cv2.imshow('Thresh' , thresh)
     camera.annotate_text = "Duckpins = "+ str(time.process_time()) + " " + str(frameNo) + " " + str(priorPinCount)
     writeImageSeries(20, 3, img_rgb)
-    cv2.imshow('Frame' , img_rgb)
-    tf = findPins()        
+    # cv2.imshow('Frame' , img_rgb)
+    if frameNo%5 ==0:
+        tf = findPins()        
 
-    cv2.rectangle(img_rgb,b, a, 255,2)
+    # cv2.rectangle(img_rgb,b, a, 255,2)
 
     # cv2.imshow('IMG_RGB with Ball Rect', img_rgb)
     # writeImageSeries(135,20)
