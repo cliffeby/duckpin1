@@ -9,7 +9,11 @@ from random import randint
 leds1 = [ 6,26,20, 5,21,3,16,2,14,15]
 leds2 = [15,3,14,20,21,2,6,26,5,16]
 leds3 = [16,2,5,14,21,26,15,3,20,6]
+<<<<<<< HEAD
 
+=======
+leds4 = [15,14,3,2,21,20,16,5,26,6]
+>>>>>>> d3a9dd430d8bd214772ee110708226bd2f03c41b
 
 def setupGPIO(pins):
     GPIO.setmode(GPIO.BCM)
@@ -46,11 +50,25 @@ def bit_GPIO(pins, bits):
 
 # *-
 
+<<<<<<< HEAD
 setupGPIO(leds1)
 lightsOFF(leds1)
 lightTESTa(leds1,1,0)
 lightTESTa(leds1[::-1], 0.5,0)
 bit_GPIO(leds1,'0000001000')
+=======
+setupGPIO(leds2)
+# lightsOFF(leds1)
+# lightTESTa(leds1,1,0)
+# lightTESTa(leds1[::-1], 0.5,0)
+lightsOFF(leds4)
+lightTESTa(leds4,1,0)
+lightTESTa(leds4[::-1], 0.5,0)
+# lightsOFF(leds3)
+# lightTESTa(leds3,1,0)
+# lightTESTa(leds3[::-1], 0.5,0)
+# bit_GPIO(leds1,'0000001000')
+>>>>>>> d3a9dd430d8bd214772ee110708226bd2f03c41b
 # setupGPIO(leds1)
 # bit_GPIO(leds1,"{0:b}".format(1023))
 # time.sleep(20)
