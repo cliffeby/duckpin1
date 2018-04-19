@@ -3,7 +3,7 @@
 import time
 import cv2
 import numpy
-import RPi.GPIO as GPIO
+# import RPi.GPIO as GPIO
 # from matplotlib import pyplot as plt
 
 pinsGPIO = [6, 26, 20, 5, 21, 3, 16, 2, 14, 15]
@@ -11,22 +11,22 @@ mask_crop_ranges = ([1100,1700, 220,2800],[0,0,0,0])
 pin_crop_ranges = ([390,490, 820,930],[325,425, 735,835],[345,445, 960,1060],[265,365, 680,760],[280,380, 860,960],
     [300,400, 1065,1165],[260,360, 600,680],[265,365, 790,890],[275,370, 970,1070],[280,380, 1150,1250])
 
-def setupGPIO(pins):
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setwarnings(False)
-    for pin in pins:
-        GPIO.setup(pin,GPIO.OUT)
-        print ("setup Completed")
+# def setupGPIO(pins):
+#     GPIO.setmode(GPIO.BCM)
+#     GPIO.setwarnings(False)
+#     for pin in pins:
+#         GPIO.setup(pin,GPIO.OUT)
+#         print ("setup Completed")
 
-def bit_GPIO(pins,pinCount):
-    bits = "{0:b}".format(pinCount)
-    while len(bits)<10:
-        bits = "0"+bits
-    for idx in range(0,len(bits)):
-        if(bits[idx]=="1"):
-             GPIO.output(pins[idx], GPIO.HIGH)
-        else:
-            GPIO.output(pins[idx], GPIO.LOW)
+# def bit_GPIO(pins,pinCount):
+#     bits = "{0:b}".format(pinCount)
+#     while len(bits)<10:
+#         bits = "0"+bits
+#     for idx in range(0,len(bits)):
+#         if(bits[idx]=="1"):
+#              GPIO.output(pins[idx], GPIO.HIGH)
+#         else:
+#             GPIO.output(pins[idx], GPIO.LOW)
 
 def writeImageSeries(frameNoStart, numberOfFrames, img_rgb):
     if frameNoStart <= frameNo:
@@ -86,12 +86,16 @@ def findPins():
                 crop.append(output[pin_crop_ranges[i][0]+y:pin_crop_ranges[i][1]+y1,pin_crop_ranges[i][2]+x:pin_crop_ranges[i][3]+x1])
                 hist = cv2.calcHist([crop[i]],[1],None,[4], [10,50])
                 sumHist[i] = hist[0]+hist[1]+hist[2]+hist[3]
- 
+                if frameNo==678:
+                    cv2.putText(crop[i],str(sumHist[i]),(10,50),cv2.FONT_HERSHEY_PLAIN,1,(255,255,255),2,cv2.LINE_AA)
+                    cv2.imwrite('../videos/videoFrame2'+ str(frameNo*10+i) +'.jpg',crop[i])
+                    print('hist', hist)
                 if threshold < sumHist[i]:
                     pinCount = pinCount + 2**(9-i)
+        
                 
-        print('HIST', frameNo, pinCount)
-        bit_GPIO(pinsGPIO,pinCount)
+        print('HIST', frameNo, pinCount, sumHist)
+        # bit_GPIO(pinsGPIO,pinCount)q
 
         if priorPinCount == pinCount:
             return False
@@ -99,8 +103,8 @@ def findPins():
             priorPinCount = pinCount
             return True
     
-cap = cv2.VideoCapture('/home/pi/Shared/videos/loop.mp4')
-setupGPIO(pinsGPIO)
+cap = cv2.VideoCapture('C:/Users/cliff/OneDrive/pyProjects/videos/output2.mp4')
+# setupGPIO(pinsGPIO)
 setterPresent = False
 armPresent = False
 priorPinCount = 0
@@ -179,14 +183,14 @@ while(cap.isOpened()):
                 firstArmFrame = frameNo
                 armPresent = True
     cv2.imshow('Ball', img_gray2)
-    cv2.imshow('Thresh' , thresh)
+    # cv2.imshow('Thresh' , thresh)
     tf = findPins()
 
     cv2.rectangle(img_rgb,b, a, 255,2)
 
-    # cv2.imshow('IMG_RGB with Ball Rect', img_rgb)
-    # writeImageSeries(135,20)
-    
+    cv2.imshow('IMG_RGB with Ball Rect', img_rgb)
+   
+    writeImageSeries(677, 3, img_rgb)
     key = cv2.waitKey(1) & 0xFF
     
     # if the `q` key was pressed, break from the loop
